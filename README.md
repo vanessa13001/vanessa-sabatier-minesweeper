@@ -1,1 +1,1 @@
-# vanessa-sabatier-minesweeper
+# minesweeper
