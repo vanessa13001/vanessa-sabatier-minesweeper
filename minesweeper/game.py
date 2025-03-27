@@ -1,13 +1,11 @@
 import os
 import json
 import pygame
-from . board import Board
-from . gui import SelectionGroup, Input, Button, Label, InputDialogue
-from . leaderboard import Leaderboard
-
+from .board import Board
+from .gui import SelectionGroup, Input, Button, Label, InputDialogue
+from .leaderboard import Leaderboard
 
 ASSETS_DIR = os.path.join(os.path.dirname(__file__), 'assets')
-
 
 def load_image(name, size=None):
     """Load image and optionally resize it."""
@@ -25,7 +23,6 @@ def load_image(name, size=None):
 
     return image
 
-
 def load_font(name, size):
     path = os.path.join(ASSETS_DIR, name)
     try:
@@ -34,7 +31,6 @@ def load_font(name, size):
         print('Cannot load font: ', path)
         raise SystemError(error)
     return font
-
 
 class Timer:
     """Execute event on timer.
@@ -64,7 +60,6 @@ class Timer:
                 pygame.time.get_ticks() - self.start_time >= self.interval):
             self.running = False
             self.on_time_event()
-
 
 def create_count_tiles(tile_size, font_name):
     """Create tiles for mine counts.
@@ -116,16 +111,13 @@ def create_count_tiles(tile_size, font_name):
 
     return tiles
 
-
 def is_key_suitable_for_name(key_name):
     """Check if a key is suitable for name input."""
     return len(key_name) == 1 and key_name.isalnum() or key_name in ['-', '_']
 
-
 def is_digit(key_name):
     """Check if a key is a digit."""
     return len(key_name) == 1 and key_name.isnumeric()
-
 
 class Game:
     """Main game class."""
@@ -157,32 +149,34 @@ class Game:
         self.max_rows = (int(0.95 * display_info.current_h) - self.HUD_HEIGHT
                          - 3 * self.MARGIN) // self.TILE_SIZE
 
-        difficulty = state.get('difficulty', 'EASY')
-        if difficulty not in ['EASY', 'NORMAL', 'HARD', 'CUSTOM']:
-            difficulty = 'EASY'
+        difficulty = state.get('difficulty', 'BRONZE')
 
         if "leaderboard" in state:
             leaderboard_data = state['leaderboard']
         else:
-            leaderboard_data = {'EASY': [], 'NORMAL': [], 'HARD': []}
+            leaderboard_data = {'BRONZE': [], 'SILVER': [], 'GOLD': [], 'DIAMOND': [], 'RUBY': []}
 
         self.n_rows = state.get('n_rows', 10)
         self.n_cols = state.get('n_cols', 10)
         self.n_mines = state.get('n_mines', 10)
-        self.set_difficulty(difficulty)
 
-        mine_count_images = create_count_tiles(self.TILE_SIZE,
-                                               "kenvector_future.ttf")
-        tile_image = load_image('tile.png', self.TILE_SIZE)
+        # Initialiser self.board avec une image de tuile par défaut
+        default_tile_image = load_image("tile.png", self.TILE_SIZE)
+        mine_count_images = create_count_tiles(self.TILE_SIZE, "kenvector_future.ttf")
         mine_image = load_image('mine.png', self.TILE_SIZE)
         flag_image = load_image('flag.png', self.TILE_SIZE)
+        question_mark_image = load_image('Intero.png', self.TILE_SIZE)
         gui_font = load_font("Akrobat-Bold.otf", self.GUI_FONT_SIZE)
 
         self.board = Board(
             self.n_rows, self.n_cols, self.n_mines,
             self.FIELD_BG_COLOR, self.FIELD_LINES_COLOR, self.TILE_SIZE,
-            tile_image, mine_count_images, flag_image, mine_image,
+            default_tile_image, mine_count_images, flag_image, mine_image,
+            question_mark_image,  # Passer l'image du point d'interrogation
             on_status_change_callback=self.on_status_change)
+
+        # Maintenant, appelez set_difficulty pour mettre à jour l'image de la tuile
+        self.set_difficulty(difficulty)
 
         self.screen = None
         self.screen_rect = None
@@ -196,8 +190,8 @@ class Game:
             gui_font,
             self.GUI_FONT_COLOR,
             "DIFFICULTY",
-            ["EASY", "NORMAL", "HARD", "CUSTOM"],
-            initial_value=state.get('difficulty', 'EASY'))
+            ["BRONZE", "SILVER", "GOLD", "DIAMOND", "RUBY", "CUSTOM"],
+            initial_value=state.get('difficulty', 'BRONZE'))
 
         self.difficulty_selector.rect.centerx = self.gui_rect.centerx
         self.difficulty_selector.rect.y = self.MARGIN
@@ -269,7 +263,7 @@ class Game:
         board_area_width = \
             max(self.n_cols, self.MIN_BOARD_DIMENSION_DISPLAY) * self.TILE_SIZE
         board_area_height = \
-            max(self.n_rows, self.MIN_BOARD_DIMENSION_DISPLAY) * self.TILE_SIZE
+            max(self.n_rows, self.MIN_BOARD_DIMENSION_DISPLAY) * self.TILE_SIZE + 70  # Augmenter la hauteur ici
         window_width = 3 * self.MARGIN + self.GUI_WIDTH + board_area_width
         window_height = 3 * self.MARGIN + self.HUD_HEIGHT + board_area_height
 
@@ -300,38 +294,59 @@ class Game:
 
         Custom difficulty is not handled in this function.
         """
-        if difficulty == "EASY":
+        if difficulty == "BRONZE":
             self.n_rows = 10
             self.n_cols = 10
             self.n_mines = 10
-        elif difficulty == "NORMAL":
+            self.tile_color = "tile_bronze.png"
+        elif difficulty == "SILVER":
             self.n_rows = 16
             self.n_cols = 16
             self.n_mines = 40
-        elif difficulty == "HARD":
+            self.tile_color = "tile_argent.png"
+        elif difficulty == "GOLD":
             self.n_rows = 16
             self.n_cols = 30
             self.n_mines = 99
+            self.tile_color = "tile_or.png"
+        elif difficulty == "DIAMOND":
+            self.n_rows = 24
+            self.n_cols = 24
+            self.n_mines = 150
+            self.tile_color = "tile_diamant.png"
+        elif difficulty == "RUBY":
+            self.n_rows = 30
+            self.n_cols = 30
+            self.n_mines = 250
+            self.tile_color = "tile_rubis.png"
+        elif difficulty == "CUSTOM":
+            self.tile_color = "tile.png"
+
+        # Charger l'image de la tuile en fonction de la couleur sélectionnée
+        tile_image = load_image(self.tile_color, self.TILE_SIZE)
+        self.board.set_tile_image(tile_image)  # Assurez-vous que Board a une méthode pour mettre à jour l'image de la tuile
 
     def place_gui(self):
         """Place GUI element according to the current settings."""
+        gui_x_offset = self.gui_rect.x - 10  # Décaler de 10 pixels vers la gauche
+
         self.width_input.rect.topleft = (
-            self.gui_rect.x,
+            gui_x_offset,  # Appliquer le décalage
             self.difficulty_selector.rect.bottom
             + 0.2 * self.difficulty_selector.rect.height)
         self.height_input.rect.topleft = (
-            self.gui_rect.x,
+            gui_x_offset,  # Appliquer le décalage
             self.width_input.rect.bottom + 0.4 * self.height_input.rect.height)
         self.mines_input.rect.topleft = (
-            self.gui_rect.x,
+            gui_x_offset,  # Appliquer le décalage
             self.height_input.rect.bottom + 0.4 * self.width_input.rect.height)
 
         hud_width = self.place_hud()
 
         self.restart_button.rect.top = self.timer.rect.top
         self.restart_button.rect.centerx = 0.5 * (self.hud_rect.left
-                                                  + self.hud_rect.right
-                                                  - hud_width)
+                                                + self.hud_rect.right
+                                                - hud_width)
 
         self.show_leaderboard_button.rect.bottom = (self.screen_rect.height
                                                     - self.MARGIN)
@@ -342,11 +357,11 @@ class Game:
         self.status.rect.top = self.current_mines.rect.top
         self.status.rect.centerx = self.restart_button.rect.centerx
 
-        self.leaderboard.rect.top = self.MARGIN
+        self.leaderboard.rect.top = self.MARGIN + 50  # Ajuster la position ici
         self.leaderboard.rect.centerx = screen_center
 
         self.leaderboard_hint.rect.bottom = (self.screen_rect.height
-                                             - self.MARGIN)
+                                            - self.MARGIN)
         self.leaderboard_hint.rect.centerx = self.screen_rect.centerx
 
         self.victory_time.rect.top = self.MARGIN
@@ -365,7 +380,7 @@ class Game:
         """Place timer and mines info and return width of this block."""
         hud_width = max(self.timer.rect.width, self.current_mines.rect.width)
         self.timer.rect.topleft = (self.hud_rect.right - hud_width,
-                                   self.hud_rect.top)
+                                self.hud_rect.top)
         self.current_mines.rect.topleft = (
             self.timer.rect.left,
             self.timer.rect.bottom + 0.4 * self.timer.rect.height)
@@ -374,8 +389,8 @@ class Game:
     def reset_game(self):
         """Reset the game."""
         self.board.reset(n_rows=self.n_rows,
-                         n_cols=self.n_cols,
-                         n_mines=self.n_mines)
+                        n_cols=self.n_cols,
+                        n_mines=self.n_mines)
 
     def show_leaderboard(self):
         """Change screen to leaderboard."""
@@ -385,7 +400,7 @@ class Game:
         """Change screen to name input."""
         self.mode = "name_input"
         self.victory_time.set_text("YOUR TIME IS {} SECONDS"
-                                   .format(self.board.time))
+                                .format(self.board.time))
         self.name_input.set_value("")
         self.place_gui()
 
@@ -401,11 +416,11 @@ class Game:
     def on_status_change(self, new_status):
         """Handle game status change."""
         if new_status == 'game_over':
-            self.status.set_text("GAME OVER!")
+            self.status.set_text("WASTED!")
         elif new_status == 'victory':
             self.status.set_text("VICTORY!")
             if self.leaderboard.needs_update(self.difficulty_selector.selected,
-                                             self.board.time):
+                                            self.board.time):
                 self.show_name_input_timer.start(
                     self.DELAY_BEFORE_NAME_INPUT_MS)
         elif new_status == 'before_start':
@@ -418,7 +433,7 @@ class Game:
         self.height_input.active_input = False
         self.width_input.active_input = False
         self.mines_input.active_input = False
-        self.set_difficulty(difficulty)
+        self.set_difficulty(difficulty)  # Met à jour la difficulté et la couleur de la tuile
         if difficulty == "CUSTOM":
             self.height_input.active_input = True
             self.width_input.active_input = True
@@ -552,7 +567,6 @@ class Game:
         }
         with open(state_file_path, "w") as state_file:
             json.dump(state, state_file)
-
 
 def run(state_file_path):
     pygame.init()

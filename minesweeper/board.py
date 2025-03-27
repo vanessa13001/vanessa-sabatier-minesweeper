@@ -2,11 +2,10 @@ from collections import deque
 import random
 import numpy
 import pygame
-
+import json
 
 LEFT_BUTTON = 1
 RIGHT_BUTTON = 3
-
 
 def cross_image(image, color, line_width):
     """Draw a cross over the tile."""
@@ -16,14 +15,12 @@ def cross_image(image, color, line_width):
     pygame.draw.line(image, color, (w, 0), (0, h), line_width)
     return image
 
-
 def add_background_color(tile, color):
     """Draw a tile on the solid color background."""
     background = pygame.Surface(tile.get_size())
     background.fill(color)
     background.blit(tile, (0, 0))
     return background
-
 
 class Tile(pygame.sprite.Sprite):
     """Sprite for a board tile."""
@@ -32,7 +29,6 @@ class Tile(pygame.sprite.Sprite):
         self.image = image
         self.rect = pygame.Rect(j * tile_size, i * tile_size,
                                 tile_size, tile_size)
-
 
 def create_field(n_rows, n_cols, tile_size, bg_color, line_color):
     """Create a checkered field.
@@ -68,7 +64,6 @@ def create_field(n_rows, n_cols, tile_size, bg_color, line_color):
 
     return field
 
-
 class Board:
     """Game board.
 
@@ -90,6 +85,8 @@ class Board:
         Image for a flag.
     mine_image : pygame.Surface
         Image for a mine.
+    question_mark_image : pygame.Surface
+        Image for a question mark.
     on_status_change_callback : callable
         Call when game status changes. The signature is
         ``on_status_change_callback(news_status)``, where ``new_status`` is
@@ -98,10 +95,11 @@ class Board:
     TILE_CLOSED = 0
     TILE_OPENED = 1
     TILE_CHECKED = 2
+    TILE_QUESTION = 3  # Nouvel état pour le point d'interrogation
 
     def __init__(self, n_rows, n_cols, n_mines, bg_color, bg_lines_color,
                  tile_size, tile_image, mine_count_images, flag_image,
-                 mine_image, on_status_change_callback=None):
+                 mine_image, question_mark_image, on_status_change_callback=None):
         self.n_rows = n_rows
         self.n_cols = n_cols
         self.n_mines = n_mines
@@ -127,6 +125,7 @@ class Board:
         self.mine_count_images = mine_count_images
         self.flag_image = flag_image
         self.mine_image = mine_image
+        self.question_mark_image = question_mark_image
         self.mine_image_crossed = cross_image(mine_image,
                                               pygame.Color('red'),
                                               2)
@@ -141,6 +140,11 @@ class Board:
 
         self.on_status_change_callback = on_status_change_callback
         self.game_status = "before_start"
+
+    def set_tile_image(self, tile_image):
+        """Set a new tile image for the board."""
+        self.tile_image = tile_image
+        self._init_tiles()  # Reinitialize tiles with the new image
 
     def _init_tiles(self):
         """Initialize list of tiles with closed tiles."""
@@ -281,6 +285,8 @@ class Board:
             self.tile_status[i, j] = self.TILE_CHECKED
             self.n_mines_left -= 1
         elif self.tile_status[i, j] == self.TILE_CHECKED:
+            self.tile_status[i, j] = self.TILE_QUESTION
+        elif self.tile_status[i, j] == self.TILE_QUESTION:
             self.tile_status[i, j] = self.TILE_CLOSED
             self.n_mines_left += 1
 
@@ -344,6 +350,11 @@ class Board:
                     tile.image = self.mine_count_images[self.mine_count[i, j]]
                 elif status == Board.TILE_CHECKED:
                     tile.image = self.mine_image_crossed
+                elif status == Board.TILE_QUESTION:
+                    tile.image = self.tile_image.copy()
+                    rect = self.question_mark_image.get_rect(
+                        center=tile.image.get_rect().center)
+                    tile.image.blit(self.question_mark_image, rect.topleft)
 
                 k += 1
 
@@ -401,6 +412,11 @@ class Board:
                     rect = self.flag_image.get_rect(
                         center=tile.image.get_rect().center)
                     tile.image.blit(self.flag_image, rect.topleft)
+                elif status == Board.TILE_QUESTION:
+                    tile.image = self.tile_image.copy()
+                    rect = self.question_mark_image.get_rect(
+                        center=tile.image.get_rect().center)
+                    tile.image.blit(self.question_mark_image, rect.topleft)
 
                 k += 1
 
@@ -464,3 +480,38 @@ class Board:
         bg = self.bg_image.copy()
         self.tiles_group.draw(bg)
         surface.blit(bg, self.rect)
+
+    def save_state(self, filename='board_state.json'):
+        """Sauvegarder l'état actuel de la grille dans un fichier JSON."""
+        state = {
+            'n_rows': self.n_rows,
+            'n_cols': self.n_cols,
+            'n_mines': self.n_mines,
+            'is_mine': self.is_mine.tolist(),
+            'tile_status': self.tile_status.tolist(),
+            'n_mines_left': self.n_mines_left,
+            'time': self._time,
+            'game_status': self.game_status
+        }
+        with open(filename, 'w') as f:
+            json.dump(state, f)
+
+    def load_state(self, filename='board_state.json'):
+        """Charger l'état de la grille depuis un fichier JSON."""
+        with open(filename, 'r') as f:
+            state = json.load(f)
+
+        self.n_rows = state['n_rows']
+        self.n_cols = state['n_cols']
+        self.n_mines = state['n_mines']
+        self.is_mine = numpy.array(state['is_mine'])
+        self.tile_status = numpy.array(state['tile_status'])
+        self.n_mines_left = state['n_mines_left']
+        self._time = state['time']
+        self.game_status = state['game_status']
+
+        self.reset(self.n_rows, self.n_cols, self.n_mines)
+        self.tile_status = numpy.array(state['tile_status'])
+        self.n_mines_left = state['n_mines_left']
+        self._time = state['time']
+        self._change_game_status(self.game_status)
