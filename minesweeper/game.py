@@ -136,6 +136,8 @@ class Game:
     MAX_NAME_LENGTH = 8
     DELAY_BEFORE_NAME_INPUT_MS = 1000
 
+    difficulty_levels = ["BRONZE", "SILVER", "GOLD", "DIAMOND", "RUBY"]
+
     def __init__(self, state_file_path):
         try:
             with open(state_file_path) as state_file:
@@ -174,6 +176,9 @@ class Game:
             default_tile_image, mine_count_images, flag_image, mine_image,
             question_mark_image,  # Passer l'image du point d'interrogation
             on_status_change_callback=self.on_status_change)
+
+        # Ajoutez cette ligne pour suivre le niveau actuel terminé
+        self.current_completed_level = state.get('current_completed_level', 'BRONZE')
 
         # Maintenant, appelez set_difficulty pour mettre à jour l'image de la tuile
         self.set_difficulty(difficulty)
@@ -415,6 +420,10 @@ class Game:
 
     def on_status_change(self, new_status):
         """Handle game status change."""
+        if new_status == 'victory':
+            # Mettre à jour le niveau terminé lorsque l'utilisateur gagne
+            self.current_completed_level = self.difficulty_selector.selected
+
         if new_status == 'game_over':
             self.status.set_text("WASTED!")
         elif new_status == 'victory':
@@ -446,6 +455,29 @@ class Game:
         self.init_screen()
         self.place_gui()
         self.reset_game()
+
+    def show_error_message(self, message):
+        """Afficher une fenêtre d'erreur à l'utilisateur."""
+        # Créer une surface pour la fenêtre d'erreur
+        error_surface = pygame.Surface((300, 100))
+        error_surface.fill(pygame.Color('white'))
+
+        # Créer un rectangle pour la bordure
+        border_rect = error_surface.get_rect()
+        pygame.draw.rect(error_surface, pygame.Color('black'), border_rect, 2)
+
+        # Rendre le texte du message
+        font = pygame.font.Font(None, 18)
+        text = font.render(message, True, pygame.Color('black'))
+        text_rect = text.get_rect(center=border_rect.center)  # Centrer le texte dans la boîte
+        error_surface.blit(text, text_rect)
+
+        # Afficher la fenêtre d'erreur
+        self.screen.blit(error_surface, (self.screen_rect.width // 2 - 150, self.screen_rect.height // 2 - 50))
+        pygame.display.flip()
+
+        # Attendre un court instant pour que l'utilisateur puisse lire le message
+        pygame.time.wait(2000)
 
     def set_game_parameter(self, parameter, max_value, value):
         """Set either n_rows, n_cols, n_mines."""
@@ -563,7 +595,8 @@ class Game:
             "n_rows": self.n_rows,
             "n_cols": self.n_cols,
             "n_mines": self.n_mines,
-            "leaderboard": self.leaderboard.data
+            "leaderboard": self.leaderboard.data,
+            "current_completed_level": self.current_completed_level  # Sauvegarder le niveau terminé
         }
         with open(state_file_path, "w") as state_file:
             json.dump(state, state_file)
