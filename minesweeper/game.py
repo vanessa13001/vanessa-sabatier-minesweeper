@@ -328,7 +328,7 @@ class Game:
             self.n_mines = 250
             self.tile_color = "tile_rubis.png"
         elif difficulty == "CUSTOM":
-            self.tile_color = "tile.png"
+            self.tile_color = "tile_jade.png"
 
         # Charger l'image de la tuile en fonction de la couleur sélectionnée
         tile_image = load_image(self.tile_color, self.TILE_SIZE)
