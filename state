@@ -1,1 +1,1 @@
-{"difficulty": "GOLD", "n_rows": 16, "n_cols": 30, "n_mines": 99, "leaderboard": {"EASY": [], "NORMAL": [], "HARD": []}, "current_completed_level": "BRONZE"}
+{"difficulty": "BRONZE", "n_rows": 10, "n_cols": 10, "n_mines": 10, "leaderboard": {"EASY": [], "NORMAL": [], "HARD": []}, "current_completed_level": "BRONZE"}
