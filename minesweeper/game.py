@@ -5,6 +5,9 @@ from .board import Board
 from .gui import SelectionGroup, Input, Button, Label, InputDialogue
 from .leaderboard import Leaderboard
 
+icon = pygame.image.load('minesweeper/assets/mine_.png')
+pygame.display.set_icon(icon)
+
 ASSETS_DIR = os.path.join(os.path.dirname(__file__), 'assets')
 
 def load_image(name, size=None):
@@ -165,7 +168,7 @@ class Game:
         # Initialiser self.board avec une image de tuile par défaut
         default_tile_image = load_image("tile.png", self.TILE_SIZE)
         mine_count_images = create_count_tiles(self.TILE_SIZE, "kenvector_future.ttf")
-        mine_image = load_image('mine.png', self.TILE_SIZE)
+        mine_image = load_image('mine_.png', self.TILE_SIZE)
         flag_image = load_image('flag.png', self.TILE_SIZE)
         question_mark_image = load_image('Intero.png', self.TILE_SIZE)
         gui_font = load_font("Akrobat-Bold.otf", self.GUI_FONT_SIZE)
