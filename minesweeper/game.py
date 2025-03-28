@@ -7,6 +7,9 @@ from .leaderboard import Leaderboard
 
 icon = pygame.image.load('minesweeper/assets/mine_.png')
 pygame.display.set_icon(icon)
+pygame.mixer.init()
+pygame.mixer.music.load('minesweeper/assets/Time_Trial.ogg')
+pygame.mixer.music.play(-1)
 
 ASSETS_DIR = os.path.join(os.path.dirname(__file__), 'assets')
 
@@ -171,7 +174,7 @@ class Game:
         mine_image = load_image('mine_.png', self.TILE_SIZE)
         flag_image = load_image('flag.png', self.TILE_SIZE)
         question_mark_image = load_image('Intero.png', self.TILE_SIZE)
-        gui_font = load_font("Akrobat-Bold.otf", self.GUI_FONT_SIZE)
+        gui_font = load_font("Kunoichi.otf", self.GUI_FONT_SIZE)
 
         self.board = Board(
             self.n_rows, self.n_cols, self.n_mines,
