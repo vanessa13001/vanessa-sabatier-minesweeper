@@ -1,1 +1,1 @@
-{"difficulty": "CUSTOM", "n_rows": 10, "n_cols": 10, "n_mines": 99, "leaderboard": {"DIAMOND": [], "GOLD": [], "SILVER": [], "RUBY": [], "BRONZE": [], "CUSTOM": [["marseill", 0]]}, "current_completed_level": "CUSTOM"}
+{"difficulty": "CUSTOM", "n_rows": 10, "n_cols": 10, "n_mines": 1, "leaderboard": {"DIAMOND": [], "GOLD": [], "BRONZE": [["mrmalade", 16]], "CUSTOM": [["marseill", 0], ["rapide", 0], ["ProTNul", 1]], "SILVER": [], "RUBY": []}, "current_completed_level": "CUSTOM"}
