@@ -1,7 +1,7 @@
 import pygame
 
 class Leaderboard:
-    """Stocke, met à jour et affiche le tableau des scores."""
+    """Stores, updates, and displays the scoreboard."""
 
     def __init__(self, font, font_color, max_items, width, data=None):
         self.font = font
@@ -24,15 +24,17 @@ class Leaderboard:
         self.list_start_y = (self.vertical_margin + self.text_height
                              + self.vertical_margin)
 
+        # Ensure all required keys are present in self.data
+        required_keys = {'BRONZE', 'SILVER', 'GOLD', 'DIAMOND', 'RUBY', 'CUSTOM'}
         if data is None:
-            self.data = {'EASY': [], 'NORMAL': [], 'HARD': []}
+            self.data = {key: [] for key in required_keys}
         else:
-            self.data = data
+            self.data = {key: data.get(key, []) for key in required_keys}
 
         self._prepare_render()
 
     def _prepare_surface(self):
-        """Prépare la surface avec tous les titres."""
+        """Prepares the surface with all titles."""
         self.surface.fill((0, 0, 0, 0))
 
         title_top = self.vertical_margin
@@ -56,18 +58,18 @@ class Leaderboard:
         self.surface.blit(self.title, title_rect)
 
     def _prepare_render(self):
-        """Prépare la surface à rendre."""
+        """Prepares the surface to be rendered."""
         self._prepare_surface()
         x_name = self.horizontal_margin
         x_time = self.section_width - self.horizontal_margin
 
-        # Combine tous les scores et les trie
+        # Combine all scores and sort them
         all_scores = []
-        for difficulty in ["EASY", "NORMAL", "HARD"]:
+        for difficulty in ["BRONZE", "SILVER", "GOLD", "DIAMOND", "RUBY", "CUSTOM"]:
             all_scores.extend(self.data[difficulty])
-        all_scores.sort(key=lambda x: x[1])  # Trie par temps
+        all_scores.sort(key=lambda x: x[1])  # Sort by time
 
-        # Affiche uniquement les 3 meilleurs scores
+        # Display only the top 3 scores
         y = self.list_start_y
         for name, time in all_scores[:3]:
             name_image = self.font.render(name, True, self.font_color)
@@ -78,7 +80,7 @@ class Leaderboard:
             y += self.text_height + self.vertical_margin
 
     def needs_update(self, difficulty, time):
-        """Vérifie si le tableau des scores doit être mis à jour."""
+        """Checks if the scoreboard needs to be updated."""
         if difficulty not in self.data:
             return False
 
@@ -89,7 +91,7 @@ class Leaderboard:
         return data[-1][1] > time
 
     def update(self, difficulty, name, time):
-        """Met à jour le tableau des scores."""
+        """Updates the scoreboard."""
         if difficulty not in self.data:
             return
 
@@ -102,8 +104,8 @@ class Leaderboard:
         if len(data) > self.max_items:
             data.pop()
 
-        self._prepare_render()  # Assurez-vous que la surface est ré-rendue
+        self._prepare_render()  # Ensure the surface is re-rendered
 
     def draw(self, surface):
-        """Dessine sur la surface."""
+        """Draws on the surface."""
         surface.blit(self.surface, self.rect)

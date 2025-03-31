@@ -95,7 +95,7 @@ class Board:
     TILE_CLOSED = 0
     TILE_OPENED = 1
     TILE_CHECKED = 2
-    TILE_QUESTION = 3  # Nouvel état pour le point d'interrogation
+    TILE_QUESTION = 3  # New state for the question mark
 
     def __init__(self, n_rows, n_cols, n_mines, bg_color, bg_lines_color,
                  tile_size, tile_image, mine_count_images, flag_image,
@@ -482,7 +482,7 @@ class Board:
         surface.blit(bg, self.rect)
 
     def save_state(self, filename='board_state.json'):
-        """Sauvegarder l'état actuel de la grille dans un fichier JSON."""
+        """Save the current state of the board to a JSON file."""
         state = {
             'n_rows': self.n_rows,
             'n_cols': self.n_cols,
@@ -497,7 +497,7 @@ class Board:
             json.dump(state, f)
 
     def load_state(self, filename='board_state.json'):
-        """Charger l'état de la grille depuis un fichier JSON."""
+        """Load the state of the board from a JSON file."""
         with open(filename, 'r') as f:
             state = json.load(f)
 

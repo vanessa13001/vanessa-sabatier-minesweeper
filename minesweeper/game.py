@@ -168,25 +168,25 @@ class Game:
         self.n_cols = state.get('n_cols', 10)
         self.n_mines = state.get('n_mines', 10)
 
-        # Initialiser self.board avec une image de tuile par défaut
+        # Initialize self.board with a default tile image
         default_tile_image = load_image("tile.png", self.TILE_SIZE)
         mine_count_images = create_count_tiles(self.TILE_SIZE, "kenvector_future.ttf")
         mine_image = load_image('mine_.png', self.TILE_SIZE)
         flag_image = load_image('flag.png', self.TILE_SIZE)
         question_mark_image = load_image('Intero.png', self.TILE_SIZE)
-        gui_font = load_font("Kunoichi.otf", self.GUI_FONT_SIZE)
+        gui_font = load_font("delfino.ttf", self.GUI_FONT_SIZE)
 
         self.board = Board(
             self.n_rows, self.n_cols, self.n_mines,
             self.FIELD_BG_COLOR, self.FIELD_LINES_COLOR, self.TILE_SIZE,
             default_tile_image, mine_count_images, flag_image, mine_image,
-            question_mark_image,  # Passer l'image du point d'interrogation
+            question_mark_image,  # Pass the question mark image
             on_status_change_callback=self.on_status_change)
 
-        # Ajoutez cette ligne pour suivre le niveau actuel terminé
+        # Add this line to track the current completed level
         self.current_completed_level = state.get('current_completed_level', 'BRONZE')
 
-        # Maintenant, appelez set_difficulty pour mettre à jour l'image de la tuile
+        # Now, call set_difficulty to update the tile image
         self.set_difficulty(difficulty)
 
         self.screen = None
@@ -274,7 +274,7 @@ class Game:
         board_area_width = \
             max(self.n_cols, self.MIN_BOARD_DIMENSION_DISPLAY) * self.TILE_SIZE
         board_area_height = \
-            max(self.n_rows, self.MIN_BOARD_DIMENSION_DISPLAY) * self.TILE_SIZE + 70  # Augmenter la hauteur ici
+            max(self.n_rows, self.MIN_BOARD_DIMENSION_DISPLAY) * self.TILE_SIZE + 70  # Increase height here
         window_width = 3 * self.MARGIN + self.GUI_WIDTH + board_area_width
         window_height = 3 * self.MARGIN + self.HUD_HEIGHT + board_area_height
 
@@ -333,23 +333,23 @@ class Game:
         elif difficulty == "CUSTOM":
             self.tile_color = "tile_jade.png"
 
-        # Charger l'image de la tuile en fonction de la couleur sélectionnée
+        # Load the tile image based on the selected color
         tile_image = load_image(self.tile_color, self.TILE_SIZE)
-        self.board.set_tile_image(tile_image)  # Assurez-vous que Board a une méthode pour mettre à jour l'image de la tuile
+        self.board.set_tile_image(tile_image)  # Ensure that Board has a method to update the tile image
 
     def place_gui(self):
         """Place GUI element according to the current settings."""
-        gui_x_offset = self.gui_rect.x - 10  # Décaler de 10 pixels vers la gauche
+        gui_x_offset = self.gui_rect.x - 10  # Offset by 10 pixels to the left
 
         self.width_input.rect.topleft = (
-            gui_x_offset,  # Appliquer le décalage
+            gui_x_offset,  # Apply the offset
             self.difficulty_selector.rect.bottom
             + 0.2 * self.difficulty_selector.rect.height)
         self.height_input.rect.topleft = (
-            gui_x_offset,  # Appliquer le décalage
+            gui_x_offset,  # Apply the offset
             self.width_input.rect.bottom + 0.4 * self.height_input.rect.height)
         self.mines_input.rect.topleft = (
-            gui_x_offset,  # Appliquer le décalage
+            gui_x_offset,  # Apply the offset
             self.height_input.rect.bottom + 0.4 * self.width_input.rect.height)
 
         hud_width = self.place_hud()
@@ -368,7 +368,7 @@ class Game:
         self.status.rect.top = self.current_mines.rect.top
         self.status.rect.centerx = self.restart_button.rect.centerx
 
-        self.leaderboard.rect.top = self.MARGIN + 50  # Ajuster la position ici
+        self.leaderboard.rect.top = self.MARGIN + 50  # Adjust the position here
         self.leaderboard.rect.centerx = screen_center
 
         self.leaderboard_hint.rect.bottom = (self.screen_rect.height
@@ -427,7 +427,7 @@ class Game:
     def on_status_change(self, new_status):
         """Handle game status change."""
         if new_status == 'victory':
-            # Mettre à jour le niveau terminé lorsque l'utilisateur gagne
+            # Update the completed level when the user wins
             self.current_completed_level = self.difficulty_selector.selected
 
         if new_status == 'game_over':
@@ -448,7 +448,7 @@ class Game:
         self.height_input.active_input = False
         self.width_input.active_input = False
         self.mines_input.active_input = False
-        self.set_difficulty(difficulty)  # Met à jour la difficulté et la couleur de la tuile
+        self.set_difficulty(difficulty)  # Update the difficulty and tile color
         if difficulty == "CUSTOM":
             self.height_input.active_input = True
             self.width_input.active_input = True
@@ -463,26 +463,26 @@ class Game:
         self.reset_game()
 
     def show_error_message(self, message):
-        """Afficher une fenêtre d'erreur à l'utilisateur."""
-        # Créer une surface pour la fenêtre d'erreur
+        """Display an error window to the user."""
+        # Create a surface for the error window
         error_surface = pygame.Surface((300, 100))
         error_surface.fill(pygame.Color('white'))
 
-        # Créer un rectangle pour la bordure
+        # Create a rectangle for the border
         border_rect = error_surface.get_rect()
         pygame.draw.rect(error_surface, pygame.Color('black'), border_rect, 2)
 
-        # Rendre le texte du message
+        # Render the text of the message
         font = pygame.font.Font(None, 18)
         text = font.render(message, True, pygame.Color('black'))
-        text_rect = text.get_rect(center=border_rect.center)  # Centrer le texte dans la boîte
+        text_rect = text.get_rect(center=border_rect.center)  # Center the text in the box
         error_surface.blit(text, text_rect)
 
-        # Afficher la fenêtre d'erreur
+        # Display the error window
         self.screen.blit(error_surface, (self.screen_rect.width // 2 - 150, self.screen_rect.height // 2 - 50))
         pygame.display.flip()
 
-        # Attendre un court instant pour que l'utilisateur puisse lire le message
+        # Wait a short moment for the user to read the message
         pygame.time.wait(2000)
 
     def set_game_parameter(self, parameter, max_value, value):
@@ -602,7 +602,7 @@ class Game:
             "n_cols": self.n_cols,
             "n_mines": self.n_mines,
             "leaderboard": self.leaderboard.data,
-            "current_completed_level": self.current_completed_level  # Sauvegarder le niveau terminé
+            "current_completed_level": self.current_completed_level  # Save the completed level
         }
         with open(state_file_path, "w") as state_file:
             json.dump(state, state_file)
