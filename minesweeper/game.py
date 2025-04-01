@@ -299,7 +299,7 @@ class Game:
         self.background_image = load_image("backgroundV2.jpg", (window_width, window_height))
 
         # Load the "wasted" image
-        self.wasted_image = load_image("Wasted.png", (self.n_cols * self.TILE_SIZE, self.n_rows * self.TILE_SIZE))
+        self.wasted_image = load_image("wasted.png", (self.n_cols * self.TILE_SIZE, self.n_rows * self.TILE_SIZE))
 
         self.gui_rect = pygame.Rect(self.MARGIN,
                                     2 * self.MARGIN + self.HUD_HEIGHT,
@@ -374,7 +374,7 @@ class Game:
         self.status.rect.top = self.current_mines.rect.top
         self.status.rect.centerx = self.restart_button.rect.centerx
 
-        self.leaderboard.rect.top = self.MARGIN + 50  # Adjust the position here
+        self.leaderboard.rect.top = self.MARGIN + 0  # Adjust the position here
         self.leaderboard.rect.centerx = screen_center
 
         self.leaderboard_hint.rect.bottom = (self.screen_rect.height
