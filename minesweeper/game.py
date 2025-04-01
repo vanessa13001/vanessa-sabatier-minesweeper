@@ -294,7 +294,13 @@ class Game:
 
         self.screen = pygame.display.set_mode((window_width, window_height))
         self.screen_rect = self.screen.get_rect()
-        self.screen.fill(self.BG_COLOR)
+
+        # Load the background image
+        self.background_image = load_image("backgroundV2.jpg", (window_width, window_height))
+
+        # Load the "wasted" image
+        self.wasted_image = load_image("Wasted.png", (self.n_cols * self.TILE_SIZE, self.n_rows * self.TILE_SIZE))
+
         self.gui_rect = pygame.Rect(self.MARGIN,
                                     2 * self.MARGIN + self.HUD_HEIGHT,
                                     self.GUI_WIDTH,
@@ -520,7 +526,8 @@ class Game:
 
     def draw_all(self):
         """Draw all elements."""
-        self.screen.fill(self.BG_COLOR)
+        # Draw the background image
+        self.screen.blit(self.background_image, (0, 0))
 
         if self.mode == "leaderboard":
             self.leaderboard.draw(self.screen)
@@ -535,6 +542,10 @@ class Game:
             return
 
         self.board.draw(self.screen)
+
+        # Draw the "wasted" image if the game is over
+        if self.board.game_status == 'game_over':
+            self.screen.blit(self.wasted_image, self.board_area_rect.topleft)
 
         self.difficulty_selector.draw(self.screen)
         self.height_input.draw(self.screen)
